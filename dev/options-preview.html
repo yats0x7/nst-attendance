@@ -1,0 +1,85 @@
+<!doctype html>
+<meta charset="utf-8" />
+<title>NST Attendance — options preview</title>
+<script>
+  // Stand-in for chrome.storage so the options page can be exercised outside an
+  // extension context. Backed by sessionStorage so edits survive a reload the
+  // way the real thing would. Dev harness only; not shipped.
+  const mem = { sync: {}, local: {} };
+  // Restore any previous edits first, then seed the attendance cache only if it
+  // is absent — seeding first let stale saved state wipe it out.
+  try {
+    Object.assign(mem, JSON.parse(sessionStorage.getItem('chrome-shim') || '{}'));
+  } catch {}
+  mem.sync = mem.sync || {};
+  mem.local = mem.local || {};
+  if (!Object.keys(mem.local).some((k) => k.startsWith('cache:'))) {
+    mem.local['cache:subjects:smstr00000001'] = { ts: Date.now(), data: [
+      { name: 'ADA - B', held: 12, attended: 12 },
+      { name: 'ADA Lab 2 - B', held: 10, attended: 9 },
+      { name: 'AP - B', held: 12, attended: 10 },
+      { name: 'AP Lab 2 - B', held: 10, attended: 8 },
+      { name: 'DE - B', held: 11, attended: 11 },
+      { name: 'DE Lab 2 - B', held: 11, attended: 11 },
+      { name: 'LHL - B', held: 0, attended: 0 },
+      { name: 'Maths III - B', held: 12, attended: 9 },
+      { name: 'Maths III Lab 2 - B', held: 10, attended: 6 },
+    ] };
+  }
+  const persist = () => sessionStorage.setItem('chrome-shim', JSON.stringify(mem));
+  const areaOf = (name) => ({
+    async get(key) {
+      if (key === null || key === undefined) return { ...mem[name] };
+      const keys = Array.isArray(key) ? key : [key];
+      return Object.fromEntries(keys.filter((k) => k in mem[name]).map((k) => [k, mem[name][k]]));
+    },
+    async set(items) { Object.assign(mem[name], items); persist(); },
+    async remove(keys) {
+      for (const k of Array.isArray(keys) ? keys : [keys]) delete mem[name][k];
+      persist();
+    },
+  });
+  window.chrome = { storage: { sync: areaOf('sync'), local: areaOf('local') } };
+</script>
+<script>
+  window.__shotParams = new URLSearchParams(location.search);
+  if (window.__shotParams.get('theme') === 'light') {
+    document.write(`<style>
+      :root { color-scheme: light !important; }
+      body { background: #fafafa !important; color: #1a1a1a !important; }
+      section { background: #fff !important; border-color: #e6e6e6 !important; }
+      input[type=number], td input, button { border-color: #8a8f98 !important; }
+      button { background: #fff !important; }
+      button.primary { background: #1a1a1a !important; color: #fff !important; border-color: #1a1a1a !important; }
+      button.link { background: none !important; color: #b91c1c !important; }
+      .status { color: #15803d !important; }
+      .badge { color: #6b7280 !important; border-color: #d4d4d8 !important; }
+      .lede, .hint, th, td.total, #sched-note { color: #4b5563 !important; }
+      summary::marker { color: #6b7280 !important; }
+    </style>`);
+  }
+</script>
+<script type="module">
+  // Pull in the real options markup so the preview cannot drift from it.
+  const html = await (await fetch('../src/options/options.html')).text();
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+  document.head.append(...doc.head.querySelectorAll('style'));
+  document.body.innerHTML = doc.body.innerHTML;
+  await import('../src/options/options.js');
+
+  // ?open=1 shows the schedule editor filled in, which is what a screenshot
+  // needs; a first-time visitor sees it collapsed.
+  if (window.__shotParams.get('open') === '1') {
+    const box = document.getElementById('sched-enabled');
+    if (!box.checked) box.click();
+    await new Promise((r) => setTimeout(r, 150));
+    const lhl = [...document.querySelectorAll('#sched-rows tr')].find((r) => r.dataset.key === 'lhl');
+    if (lhl) {
+      for (const [cls, value] of [['weeks', '10'], ['perweek', '1']]) {
+        const input = lhl.querySelector('.' + cls);
+        input.value = value;
+        input.dispatchEvent(new Event('input'));
+      }
+    }
+  }
+</script>

@@ -1,0 +1,144 @@
+<!doctype html>
+<meta charset="utf-8" />
+<title>NST Attendance — panel preview</title>
+<style>
+  body { margin: 0; padding: 32px; background: #fafafa; font: 14px system-ui, sans-serif; }
+  .wrap { max-width: 760px; margin: 0 auto; }
+  h1 { font-size: 15px; font-weight: 600; color: #555; margin: 32px 0 0; }
+  h1:first-child { margin-top: 0; }
+  @media (prefers-color-scheme: dark) { body { background: #0d0e10; } h1 { color: #aaa; } }
+</style>
+<div class="wrap" id="out"></div>
+
+<script type="module">
+  // Local harness: renders the injected card against fixtures so the UI can be
+  // checked without a portal session. Not shipped in the extension.
+  // Use the real scoring path so the demo cannot drift from the product.
+  import { rehydrate } from '../src/lib/portal.js';
+  import { renderPanel, createPanelHost } from '../src/content/panel.js';
+
+  const out = document.getElementById('out');
+
+  // The real timetable: 12 weeks x 4 classes/week, LHL 10 weeks x 1.
+  const TERM = { enabled: true, weeks: 12, perWeek: 4, perSubject: { lhl: { weeks: 10, perWeek: 1 } } };
+
+  function build(units, { target = 0.75, schedule = null } = {}) {
+    return rehydrate(units, {
+      targetPercent: target * 100,
+      overrides: {},
+      schedule: schedule ?? { enabled: false },
+    });
+  }
+
+  // Fixture "missed classes" so the expand/collapse path can be exercised.
+  const MISSED = {
+    'maths iii': [
+      { hash: 'a', title: 'Fourier Series II', start: '2026-09-02T09:00:00+05:30', component: 'Lecture', waived: false },
+      { hash: 'b', title: 'Lab 6: Laplace transforms', start: '2026-08-27T10:30:00+05:30', component: 'Lab', waived: false },
+      { hash: 'c', title: 'Lab 5', start: '2026-08-25T10:30:00+05:30', component: 'Lab', waived: true },
+      { hash: 'd', title: null, start: '2026-08-19T10:30:00+05:30', component: 'Lab', waived: false },
+      { hash: 'e', title: 'Fourier Series I', start: '2026-08-17T09:00:00+05:30', component: 'Lecture', waived: false },
+      { hash: 'f', title: 'Lab 2', start: '2026-08-12T10:30:00+05:30', component: 'Lab', waived: false },
+    ],
+  };
+
+  function show(title, state) {
+    const h = document.createElement('h1');
+    h.textContent = title;
+    out.append(h);
+    const { host, root } = createPanelHost();
+    // Interactive harness: keep local view state like mount.js does.
+    const view = { ...state, expanded: new Set(), missed: {}, refreshing: false, canExpand: true, canOpenSettings: true };
+    const handlers = {
+      onOpenSettings() { console.info('[harness] would open Settings'); },
+      onRefresh() {
+        view.refreshing = true; paint();
+        setTimeout(() => { view.refreshing = false; view.updatedAt = Date.now(); view.stale = false; paint(); }, 700);
+      },
+      onToggleMissed(key) {
+        if (view.expanded.has(key)) { view.expanded.delete(key); paint(); return; }
+        view.expanded.add(key);
+        view.missed[key] = { status: 'loading' }; paint();
+        setTimeout(() => { view.missed[key] = { status: 'ready', items: MISSED[key] ?? [] }; paint(); }, 400);
+      },
+    };
+    const paint = () => renderPanel(root, view, handlers);
+    paint();
+    out.append(host);
+    host.dataset.harness = title;
+  }
+
+  // A realistic term: comfortably above, exactly on the line, below but
+  // recoverable, and mathematically lost.
+  // A demo semester used by the harnesses and screenshots.
+  const term = [
+    { name: 'ADA - B', held: 12, attended: 12 },
+    { name: 'ADA Lab 2 - B', held: 10, attended: 9 },
+    { name: 'AP - B', held: 12, attended: 10 },
+    { name: 'AP Lab 2 - B', held: 10, attended: 8 },
+    { name: 'DE - B', held: 11, attended: 11 },
+    { name: 'DE Lab 2 - B', held: 11, attended: 11 },
+    { name: 'LHL - B', held: 0, attended: 0 },
+    { name: 'Maths III - B', held: 12, attended: 9 },
+    { name: 'Maths III Lab 2 - B', held: 10, attended: 6 },
+  ];
+
+  show('ready — no schedule data (consecutive-miss wording)', {
+    status: 'ready',
+    targetPercent: 75,
+    updatedAt: Date.now(),
+    subjects: build(term),
+  });
+
+  show('ready — with the term schedule on (12wk x 4, LHL 10wk x 1)', {
+    status: 'ready',
+    targetPercent: 75,
+    updatedAt: Date.now(),
+    subjects: build(term, { schedule: TERM }),
+  });
+
+  show('ready — cached numbers with an expired-session notice', {
+    status: 'ready',
+    targetPercent: 75,
+    updatedAt: Date.now() - 20 * 60000,
+    stale: true,
+    notice: { kind: 'auth' },
+    subjects: build(term),
+  });
+
+  show('ready — term schedule overrun (2 weeks configured, classes still running)', {
+    status: 'ready',
+    targetPercent: 75,
+    updatedAt: Date.now(),
+    subjects: build(term, { schedule: { enabled: true, weeks: 2, perWeek: 4, perSubject: {} } }),
+  });
+
+  show('ready — target raised to 85%', {
+    status: 'ready',
+    targetPercent: 85,
+    updatedAt: Date.now(),
+    subjects: build(term, { target: 0.85, schedule: TERM }),
+  });
+
+  show('ready — term not started yet', {
+    status: 'ready',
+    targetPercent: 75,
+    updatedAt: Date.now(),
+    subjects: build([
+      { name: 'ADA - B', held: 0, attended: 0 },
+      { name: 'ADA Lab 2 - B', held: 0, attended: 0 },
+    ]),
+  });
+
+  show('loading', { status: 'loading', targetPercent: 75 });
+
+  show('empty (popup, first run)', { status: 'empty', targetPercent: 75, compact: true });
+
+  show('error — expired session', { status: 'error', targetPercent: 75, errorKind: 'auth' });
+  show('error — portal changed', { status: 'error', targetPercent: 75, errorKind: 'shape' });
+  show('error — unknown', {
+    status: 'error',
+    targetPercent: 75,
+    error: 'attendance endpoint returned 500',
+  });
+</script>

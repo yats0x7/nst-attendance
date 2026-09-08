@@ -1,0 +1,60 @@
+{
+  "manifest_version": 3,
+  "name": "NST Attendance",
+  "version": "0.2.0",
+  "description": "Combined subject + lab attendance for the Newton School portal, and how many classes you can still skip.",
+  "minimum_chrome_version": "110",
+  "permissions": [
+    "storage"
+  ],
+  "host_permissions": [
+    "https://my.newtonschool.co/*"
+  ],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'"
+  },
+  "background": {
+    "service_worker": "src/background.js",
+    "type": "module"
+  },
+  "action": {
+    "default_title": "NST Attendance",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    },
+    "default_popup": "src/popup/popup.html"
+  },
+  "options_page": "src/options/options.html",
+  "content_scripts": [
+    {
+      "matches": [
+        "https://my.newtonschool.co/*"
+      ],
+      "js": [
+        "src/content/mount.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "src/lib/*.js",
+        "src/lib/adapters/*.js",
+        "src/content/panel.js"
+      ],
+      "matches": [
+        "https://my.newtonschool.co/*"
+      ]
+    }
+  ],
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}

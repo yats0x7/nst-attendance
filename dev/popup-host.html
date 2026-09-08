@@ -1,0 +1,60 @@
+<!doctype html>
+<meta charset="utf-8" />
+<script>
+  // chrome.* shim + optional seeded cache, so the popup can be viewed outside
+  // an extension context. Dev harness only.
+  const seed = new URLSearchParams(location.search).get('seed') === '1';
+  const mem = { sync: {}, local: {} };
+  if (seed) {
+    mem.local['cache:subjects:smstr00000001'] = { ts: Date.now() - 15 * 60000, data: [
+      { name: 'ADA - B', held: 12, attended: 12 },
+      { name: 'ADA Lab 2 - B', held: 10, attended: 9 },
+      { name: 'AP - B', held: 12, attended: 10 },
+      { name: 'AP Lab 2 - B', held: 10, attended: 8 },
+      { name: 'DE - B', held: 11, attended: 11 },
+      { name: 'DE Lab 2 - B', held: 11, attended: 11 },
+      { name: 'LHL - B', held: 0, attended: 0 },
+      { name: 'Maths III - B', held: 12, attended: 9 },
+      { name: 'Maths III Lab 2 - B', held: 10, attended: 6 }
+    ] };
+  }
+  const areaOf = (n) => ({
+    async get(k) {
+      if (k == null) return { ...mem[n] };
+      const keys = Array.isArray(k) ? k : [k];
+      return Object.fromEntries(keys.filter((x) => x in mem[n]).map((x) => [x, mem[n][x]]));
+    },
+    async set(i) { Object.assign(mem[n], i); },
+    async remove() {},
+  });
+  const listeners = [];
+  window.__shimLog = [];
+  window.chrome = {
+    storage: {
+      sync: areaOf('sync'), local: areaOf('local'),
+      onChanged: { addListener(fn) { listeners.push(fn); } },
+    },
+    runtime: { openOptionsPage() { window.__shimLog.push('openOptionsPage'); } },
+    tabs: {
+      async create(o) { window.__shimLog.push('tabs.create ' + o.url); return { id: 99 }; },
+      async query() { return seed ? [{ id: 7, url: 'https://my.newtonschool.co/course/smstr00000001/details' }] : []; },
+      async sendMessage(id, msg) {
+        window.__shimLog.push('sendMessage ' + id + ' ' + msg.type);
+        // Simulate the portal tab refetching and rewriting the cache.
+        await new Promise((r) => setTimeout(r, 300));
+        const k = 'cache:subjects:smstr00000001';
+        mem.local[k] = { ...mem.local[k], ts: Date.now() };
+        for (const fn of listeners) fn({ [k]: {} }, 'local');
+        return { ok: true };
+      },
+      async reload(id) { window.__shimLog.push('tabs.reload ' + id); },
+    },
+  };
+</script>
+<script type="module">
+  const html = await (await fetch('../src/popup/popup.html')).text();
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+  document.head.append(...doc.head.querySelectorAll('style'));
+  document.body.innerHTML = doc.body.innerHTML;
+  await import('../src/popup/popup.js');
+</script>

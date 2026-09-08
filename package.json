@@ -1,0 +1,26 @@
+{
+  "name": "nst-attendance",
+  "version": "0.2.0",
+  "type": "module",
+  "description": "Chrome extension that combines lecture and lab attendance per subject on the Newton School portal, and tells you how many classes you can still skip.",
+  "scripts": {
+    "test": "node --test test/*.test.js",
+    "package": "sh scripts/package.sh"
+  },
+  "license": "MIT",
+  "author": "Yatharth Katta",
+  "homepage": "https://github.com/yats0x7/nst-attendance#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yats0x7/nst-attendance.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yats0x7/nst-attendance/issues"
+  },
+  "keywords": [
+    "chrome-extension",
+    "attendance",
+    "newton-school",
+    "manifest-v3"
+  ]
+}

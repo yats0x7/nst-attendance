@@ -1,0 +1,86 @@
+<!doctype html>
+<meta charset="utf-8" />
+<title>Screenshot fixture</title>
+<style>
+  html, body { margin: 0; }
+  body { background: #f6f7f9; font: 14px system-ui, sans-serif; padding: 28px; }
+  body.dark { background: #0d0e10; }
+  .col { max-width: 780px; margin: 0 auto; }
+  .chrome { width: 360px; margin: 0 auto; box-sizing: content-box; background: #fff; border-radius: 10px; overflow: hidden; box-shadow: 0 6px 24px rgba(0,0,0,.14); }
+  body.dark .chrome { background: #17181a; box-shadow: 0 6px 24px rgba(0,0,0,.5); }
+</style>
+<div id="out" style="display:flex;justify-content:center"></div>
+<script type="module">
+  // Renders one real card for a README screenshot. Uses the shipped modules, so
+  // a screenshot can never drift from what the extension actually draws.
+  import { rehydrate } from '../../src/lib/portal.js';
+  import { renderPanel, createPanelHost } from '../../src/content/panel.js';
+
+  const q = new URLSearchParams(location.search);
+  const dark = q.get('dark') === '1';
+  if (dark) document.body.classList.add('dark');
+
+  const TERM = { enabled: true, weeks: 12, perWeek: 4, perSubject: { lhl: { weeks: 10, perWeek: 1 } } };
+  const UNITS = [
+    { name: 'ADA - B', held: 12, attended: 12 },
+    { name: 'ADA Lab 2 - B', held: 10, attended: 9 },
+    { name: 'AP - B', held: 12, attended: 10 },
+    { name: 'AP Lab 2 - B', held: 10, attended: 8 },
+    { name: 'DE - B', held: 11, attended: 11 },
+    { name: 'DE Lab 2 - B', held: 11, attended: 11 },
+    { name: 'LHL - B', held: 0, attended: 0 },
+    { name: 'Maths III - B', held: 12, attended: 9 },
+    { name: 'Maths III Lab 2 - B', held: 10, attended: 6 },
+  ];
+  // Seven, to match Maths III's 22 held - 15 attended.
+  const MISSED = [
+    { hash: 'a', title: 'Eigenvalues and Eigenvectors', start: '2026-09-02T09:00:00+05:30', component: 'Lecture', waived: false },
+    { hash: 'b', title: 'Lab 6: Laplace transforms', start: '2026-08-27T10:30:00+05:30', component: 'Lab', waived: false },
+    { hash: 'c', title: 'Lab 5: Matrix decomposition', start: '2026-08-25T10:30:00+05:30', component: 'Lab', waived: true },
+    { hash: 'd', title: 'Fourier Series II', start: '2026-08-19T09:00:00+05:30', component: 'Lecture', waived: false },
+    { hash: 'e', title: 'Lab 4: Gaussian elimination', start: '2026-08-18T10:30:00+05:30', component: 'Lab', waived: false },
+    { hash: 'f', title: 'Fourier Series I', start: '2026-08-12T09:00:00+05:30', component: 'Lecture', waived: false },
+    { hash: 'g', title: 'Lab 3: Vector spaces', start: '2026-08-11T10:30:00+05:30', component: 'Lab', waived: false },
+  ];
+
+  const settings = { targetPercent: 75, overrides: {}, schedule: q.get('sched') === '0' ? { enabled: false } : TERM };
+  const subjects = rehydrate(UNITS, settings);
+
+  /** The theme is entirely token-driven, so a capture can pin either palette by
+   *  re-applying that block's tokens unconditionally. Headless Chrome follows
+   *  the OS appearance, which would otherwise decide the screenshot for us. */
+  function forceTheme(root, which) {
+    const css = root.querySelector('style[data-nst]').textContent;
+    const re = which === 'dark'
+      ? /@media \(prefers-color-scheme: dark\) \{\s*:host \{([\s\S]*?)\}\s*\}/
+      : /^:host \{([\s\S]*?)\n\}/m;
+    const block = css.match(re);
+    if (!block) return;
+    const s = document.createElement('style');
+    s.textContent = `:host { ${block[1]} }`;
+    root.append(s);
+  }
+
+  const view = q.get('view') ?? 'card';
+  const compact = view === 'popup';
+  const wrap = document.createElement('div');
+  wrap.className = compact ? 'chrome' : 'col';
+  const { host, root } = createPanelHost('shot');
+  wrap.append(host);
+  document.getElementById('out').append(wrap);
+
+  const state = {
+    status: 'ready',
+    subjects,
+    targetPercent: 75,
+    updatedAt: new Date('2026-09-08T09:24:00').getTime(),
+    compact,
+    canExpand: !compact,
+    canOpenSettings: true,
+    expanded: new Set(compact ? [] : ['maths iii']),
+    missed: compact ? {} : { 'maths iii': { status: 'ready', items: MISSED } },
+  };
+  renderPanel(root, state, {});
+  forceTheme(root, dark ? 'dark' : 'light');
+  document.title = 'ready';
+</script>

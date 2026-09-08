@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>NST Attendance — settings</title>
+<style>
+  :root { color-scheme: light dark; }
+  body {
+    font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, sans-serif;
+    margin: 0; padding: 40px 24px; background: #fafafa; color: #1a1a1a;
+  }
+  .wrap { max-width: 620px; margin: 0 auto; }
+  h1 { font-size: 22px; margin: 0 0 4px; letter-spacing: -0.01em; }
+  .lede { color: #4b5563; margin: 0 0 32px; }
+  section { background: #fff; border: 1px solid #e6e6e6; border-radius: 12px; padding: 20px 24px; margin-bottom: 20px; }
+  h2 { font-size: 15px; margin: 0 0 6px; display: inline; }
+  summary { cursor: pointer; padding: 2px 0; min-height: 24px; display: list-item; }
+  summary::marker { color: #6b7280; }
+  details[open] summary { margin-bottom: 10px; }
+  .badge { font-size: 11px; font-weight: 600; color: #6b7280; border: 1px solid #d4d4d8;
+           border-radius: 999px; padding: 1px 7px; margin-left: 6px; vertical-align: 1px; }
+  .hint { color: #4b5563; font-size: 13px; margin: 0 0 16px; }
+  .sr, caption { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+  :is(button, input, summary):focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; border-radius: 4px; }
+  .target-row { display: flex; align-items: center; gap: 16px; }
+  input[type=range] { flex: 1; }
+  input[type=number] { width: 76px; padding: 6px 8px; font: inherit; border: 1px solid #8a8f98; border-radius: 6px; background: transparent; color: inherit; min-height: 24px; }
+  input[type=range] { min-height: 24px; }
+  .check input { width: 18px; height: 18px; margin: 3px 0; }
+  table { width: 100%; border-collapse: collapse; }
+  th { text-align: left; font-size: 12px; color: #4b5563; font-weight: 600; padding-bottom: 6px; }
+  td { padding: 4px 6px 4px 0; }
+  td input { width: 100%; padding: 6px 8px; font: inherit; border: 1px solid #8a8f98; border-radius: 6px; background: transparent; color: inherit; }
+  button { font: inherit; padding: 7px 14px; border-radius: 8px; border: 1px solid #8a8f98; background: #fff; color: inherit; cursor: pointer; min-height: 32px; }
+  button:hover { background: #f4f4f5; }
+  button.primary { background: #1a1a1a; color: #fff; border-color: #1a1a1a; }
+  button.primary:hover { background: #333; }
+  button.link { border: none; background: none; color: #b91c1c; padding: 6px 8px; }
+  .actions { display: flex; align-items: center; gap: 12px; margin-top: 16px; }
+  .status { color: #15803d; font-size: 13px; min-height: 1.5em; }
+  .check { display: flex; align-items: center; gap: 8px; margin: 4px 0 0; cursor: pointer; min-height: 24px; }
+  .defaults { margin: 16px 0 0; gap: 8px; flex-wrap: wrap; }
+  .defaults input[type=number] { width: 64px; flex: 0 0 auto; }
+  td.total { color: #4b5563; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  td input[type=number] { width: 88px; }
+  @media (prefers-color-scheme: dark) {
+    body { background: #0d0e10; color: #e8e8ea; }
+    section { background: #17181a; border-color: #2a2c30; }
+    input[type=number], td input, button { border-color: #6b7280; }
+    .lede, .hint, th, td.total { color: #b4b8bf; }
+    summary::marker { color: #a1a5ad; }
+    :is(button, input, summary):focus-visible { outline-color: #60a5fa; }
+    button { background: #202226; }
+    button:hover { background: #26282c; }
+    button.primary { background: #e8e8ea; color: #17181a; border-color: #e8e8ea; }
+    button.primary:hover { background: #fff; }
+    button.link { background: none; color: #fca5a5; }
+    .status { color: #4ade80; }
+    .badge { color: #9ca3af; border-color: #3a3d42; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>NST Attendance</h1>
+  <p class="lede">Settings sync across the browsers you're signed into.</p>
+
+  <section>
+    <h2>Attendance target</h2>
+    <p class="hint">The minimum you need to maintain. Most programmes require 75%.</p>
+    <div class="target-row">
+      <input type="range" id="target-range" step="1" aria-label="Target percentage" />
+      <input type="number" id="target-number" step="1" aria-label="Target percentage" />
+      <span>%</span>
+    </div>
+  </section>
+
+  <section>
+    <h2>Term schedule <span class="badge">optional</span></h2>
+    <p class="hint">
+      The portal only publishes about a week of timetable, so it can't tell how many classes are
+      left this term. Fill this in and the card switches from "you can skip 3 more right now" to
+      "you can miss 6 of your 32 remaining classes" — and warns you if 75% stops being reachable.
+    </p>
+    <p class="hint">
+      Leave it off and everything still works; you just get the safe short-range number.
+    </p>
+    <label class="check">
+      <input type="checkbox" id="sched-enabled" />
+      <span>I know my term schedule</span>
+    </label>
+    <div id="sched-body" hidden>
+      <div class="target-row defaults">
+        <span>By default</span>
+        <input type="number" id="sched-weeks" min="1" max="60" step="1" aria-label="Weeks in term" />
+        <span>weeks &times;</span>
+        <input type="number" id="sched-perweek" min="1" max="40" step="1" aria-label="Classes per week" />
+        <span>classes/week</span>
+      </div>
+      <p class="hint" id="sched-note"></p>
+      <table>
+        <caption>Term schedule per subject</caption>
+        <thead>
+          <tr><th scope="col">Subject</th><th scope="col">Weeks</th><th scope="col">Classes/week</th><th scope="col">Total</th></tr>
+        </thead>
+        <tbody id="sched-rows"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <details>
+      <summary><h2>Subject grouping <span class="badge">advanced</span></h2></summary>
+      <p class="hint">
+        <strong>You almost certainly don't need this.</strong> A subject and its lab are paired
+        automatically from their names — "ADA&nbsp;-&nbsp;B" with "ADA&nbsp;Lab&nbsp;2&nbsp;-&nbsp;B"
+        — and that works for every subject on the portal today. Leave this empty.
+      </p>
+      <p class="hint">
+        Only if a subject shows up split in two, or two unrelated subjects get merged, add a row:
+        the course name exactly as the portal shows it on the left, and the subject it should
+        belong to on the right.
+      </p>
+      <table>
+        <caption>Manual subject grouping rules</caption>
+        <thead>
+          <tr><th scope="col">Course name on the portal</th><th scope="col">Belongs to subject</th><th scope="col"><span class="sr">Actions</span></th></tr>
+        </thead>
+        <tbody id="overrides"></tbody>
+      </table>
+      <div class="actions">
+        <button type="button" id="add-row">Add row</button>
+      </div>
+    </details>
+  </section>
+
+  <div class="actions">
+    <button type="button" class="primary" id="save">Save</button>
+    <button type="button" id="clear-cache">Clear cached data</button>
+    <span class="status" id="status" role="status"></span>
+  </div>
+</div>
+<script type="module" src="options.js"></script>
+</body>
+</html>

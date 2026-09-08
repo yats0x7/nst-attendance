@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>NST Attendance</title>
+<style>
+  :root { color-scheme: light dark; }
+  body { width: 360px; margin: 0; background: #fafafa; }
+  /* Spacing inside the popup is owned entirely by the card's compact mode. */
+  #panel { padding: 0; }
+  .bar {
+    display: flex; align-items: center; justify-content: space-between; gap: 8px;
+    padding: 4px 16px 10px;
+    font: 0.75rem/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: #4b5563;
+  }
+  .bar button {
+    font: inherit; color: #4b5563; background: none; border: 0; padding: 6px 0; min-height: 24px;
+    cursor: pointer; text-decoration: underline; text-underline-offset: 2px; border-radius: 4px;
+  }
+  .bar button:hover { color: #111; }
+  .bar button:focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; }
+  #hint { min-height: 1.4em; }
+  #hint:empty { display: none; }
+  @media (prefers-color-scheme: dark) {
+    body { background: #0d0e10; }
+    .bar, .bar button { color: #b4b8bf; }
+    .bar button:hover { color: #fff; }
+    .bar button:focus-visible { outline-color: #60a5fa; }
+  }
+</style>
+</head>
+<body>
+  <div id="panel"></div>
+  <div class="bar">
+    <span id="hint" role="status"></span>
+    <span id="hint-action"></span>
+  </div>
+  <script type="module" src="popup.js"></script>
+</body>
+</html>

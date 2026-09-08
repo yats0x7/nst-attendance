@@ -1,0 +1,14 @@
+<!doctype html>
+<meta charset="utf-8" />
+<title>NST Attendance — popup preview</title>
+<style>
+  body { margin:0; padding:24px; background:#3a3a3c; font:13px system-ui,sans-serif; }
+  .row { display:flex; gap:24px; align-items:flex-start; flex-wrap:wrap; }
+  .chrome { width:360px; border:1px solid #555; border-radius:10px; overflow:hidden; box-shadow:0 8px 24px rgba(0,0,0,.4); }
+  h1 { color:#ddd; font-size:13px; font-weight:600; margin:0 0 8px; }
+  iframe { width:360px; height:520px; border:0; display:block; }
+</style>
+<div class="row">
+  <div><h1>with cached data</h1><div class="chrome"><iframe src="popup-host.html?seed=1"></iframe></div></div>
+  <div><h1>first run, no data yet</h1><div class="chrome"><iframe src="popup-host.html?seed=0"></iframe></div></div>
+</div>
