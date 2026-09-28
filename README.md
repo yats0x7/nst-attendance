@@ -28,6 +28,24 @@ Not on the Chrome Web Store yet, so load it unpacked:
 If you change anything in the code, press the circular **reload** arrow on the extension's card in
 `chrome://extensions`, then reload the portal tab.
 
+## On your phone
+
+No browser on Android or iOS runs Chrome extensions, and the portal sends no CORS headers — so a
+separate mobile app or website physically cannot read your attendance. What does work is a
+**bookmarklet** that runs on the portal's own page, using the session already in your browser.
+
+**→ [Set it up here](https://yats0x7.github.io/nst-attendance/)** (easiest on a laptop, then let your
+bookmarks sync to the phone).
+
+<img src="docs/screenshots/mobile.png" alt="The attendance sheet on a phone" width="300">
+
+Open any course page on the portal, trigger the bookmark, and the same numbers slide up in a sheet.
+Tap it again to close. It refuses to run on any site other than `my.newtonschool.co`.
+
+It is built from the extension's own source by `npm run build:mobile`, so the phone and the desktop
+card can't disagree. Your target and term schedule are stored on that phone only — there is no
+server to sync them through, and adding one would mean sending attendance off your device.
+
 ## How to use it
 
 **Just read the sentence.** Each subject gets one line telling you what to do. The percentage next
@@ -145,8 +163,9 @@ state has a sentence.
 No build step and no dependencies.
 
 ```bash
-npm test          # 96 tests, node --test
-npm run package   # dist/nst-attendance-<version>.zip
+npm test            # 96 tests, node --test
+npm run build:mobile # rebuild docs/nst-mobile.js from src/
+npm run package      # dist/nst-attendance-<version>.zip
 ```
 
 The tests include an exhaustive sweep over every attended/held pair up to 60 classes, asserting the
@@ -162,7 +181,8 @@ python3 dev/serve.py 8731 .
 - `dev/preview.html` — the card in every state
 - `dev/popup-preview.html` — the toolbar popup
 - `dev/options-preview.html` — settings
-- `dev/shots/shot.html` — the fixtures the screenshots above are captured from
+- `dev/shots/shot.html` — the fixtures the card screenshots are captured from
+- `dev/shots/mobile.html` — the phone sheet, against a stubbed portal page
 
 `dev/serve.py` is used instead of `python3 -m http.server` because the latter honours conditional
 requests, which lets a stale module keep rendering while you're checking a change.
@@ -186,6 +206,9 @@ src/
     portal.js            fetch orchestration, caches, scoring
     storage.js           settings (sync) + caches (local)
     adapters/api-adapter.js   the portal's REST endpoints; the only fetch
+mobile/                  the phone bookmarklet's entry point and page storage
+scripts/build-mobile.mjs bundles the extension into docs/nst-mobile.js
+docs/index.html          the bookmarklet install page (GitHub Pages)
 test/                    node --test
 dev/                     local harnesses; not shipped
 docs/portal-api.md       the portal endpoints this uses, and how they were confirmed

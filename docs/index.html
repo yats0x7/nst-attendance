@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>NST Attendance on your phone</title>
+<meta name="description" content="See your combined lecture + lab attendance on the Newton School portal from a phone, with a bookmarklet." />
+<style>
+  :root { color-scheme: light dark; --ink: #111318; --ink-2: #4b5563; --ink-3: #5f6672;
+    --bg: #fafafa; --card: #fff; --line: #e5e7eb; --accent: #15803d; --warn: #b45309; --code: #f3f4f6; }
+  @media (prefers-color-scheme: dark) {
+    :root { --ink: #e8e8ea; --ink-2: #b4b8bf; --ink-3: #a1a5ad;
+      --bg: #0d0e10; --card: #17181a; --line: #2a2c30; --accent: #4ade80; --warn: #fbbf24; --code: #1f2124; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 32px 20px 72px; background: var(--bg); color: var(--ink);
+    font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+  .wrap { max-width: 640px; margin: 0 auto; }
+  h1 { font-size: 1.7rem; line-height: 1.2; margin: 0 0 6px; letter-spacing: -0.02em; }
+  .lede { color: var(--ink-3); margin: 0 0 28px; }
+  h2 { font-size: 1.05rem; margin: 32px 0 8px; letter-spacing: -0.01em; }
+  p { margin: 0 0 12px; }
+  a { color: inherit; }
+  section { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 20px; margin: 0 0 18px; }
+  ol { margin: 0; padding-left: 20px; }
+  ol li { margin-bottom: 10px; }
+  code, kbd { background: var(--code); border-radius: 5px; padding: 1px 5px; font-size: .875em;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+  .grab { display: inline-block; padding: 12px 20px; border-radius: 10px; background: var(--ink); color: var(--bg);
+    font-weight: 700; text-decoration: none; cursor: grab; }
+  .hint { color: var(--ink-3); font-size: .875rem; margin: 10px 0 0; }
+  textarea { width: 100%; min-height: 84px; margin-top: 10px; padding: 10px; border-radius: 10px;
+    border: 1px solid var(--line); background: var(--code); color: var(--ink);
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .75rem; resize: vertical; }
+  button { font: inherit; font-weight: 600; padding: 10px 16px; min-height: 44px; border-radius: 10px;
+    border: 1px solid var(--line); background: var(--card); color: inherit; cursor: pointer; }
+  button:hover { background: var(--code); }
+  :is(a, button, textarea):focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; }
+  .ok { color: var(--accent); font-weight: 600; }
+  .note { border-left: 3px solid var(--warn); padding-left: 14px; color: var(--ink-2); }
+  figure { margin: 22px 0 0; text-align: center; }
+  figure img { width: 100%; max-width: 300px; border-radius: 14px; border: 1px solid var(--line); }
+  figcaption { color: var(--ink-3); font-size: .8rem; margin-top: 8px; }
+  footer { color: var(--ink-3); font-size: .875rem; margin-top: 34px; text-align: center; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Your attendance, on your phone</h1>
+  <p class="lede">
+    The <a href="https://github.com/yats0x7/nst-attendance">NST Attendance</a> extension only runs on
+    desktop Chrome — no browser on Android or iOS supports extensions. This bookmarklet gives you the
+    same card on your phone.
+  </p>
+
+  <section>
+    <h2>The bookmarklet</h2>
+    <p>On a computer, drag this to your bookmarks bar:</p>
+    <p><a class="grab" id="blink" href="#">📊 Attendance</a></p>
+    <p class="hint">On a phone, tap Copy and follow the steps below.</p>
+    <textarea id="code" readonly rows="3" aria-label="Bookmarklet code"></textarea>
+    <p><button type="button" id="copy">Copy</button> <span id="done" class="ok" role="status"></span></p>
+  </section>
+
+  <section>
+    <h2>Easiest: set it up on your computer</h2>
+    <p>If your bookmarks sync (Chrome signed in, or iCloud for Safari), do it once on the laptop and it
+      appears on the phone.</p>
+    <ol>
+      <li>Drag the button above to your bookmarks bar.</li>
+      <li>Wait for bookmarks to sync to your phone.</li>
+      <li>On the phone, open <code>my.newtonschool.co</code> and go to any course page.</li>
+      <li>Open the bookmark — in Safari, tap the address bar and pick it from Favourites; in Chrome,
+        start typing <b>Attendance</b> in the address bar and tap the result.</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>Or set it up on the phone directly</h2>
+    <p><b>iPhone / Safari</b></p>
+    <ol>
+      <li>Tap <b>Copy</b> above.</li>
+      <li>Bookmark any page: tap <b>Share</b> → <b>Add Bookmark</b> → <b>Save</b>.</li>
+      <li>Tap the bookmarks icon, then <b>Edit</b>, and open that bookmark.</li>
+      <li>Rename it <b>Attendance</b>, delete the address, and paste what you copied. Tap <b>Done</b>.</li>
+      <li>Go to a course page on the portal, tap the address bar, and choose <b>Attendance</b>.</li>
+    </ol>
+    <p><b>Android / Chrome</b></p>
+    <ol>
+      <li>Tap <b>Copy</b> above.</li>
+      <li>Bookmark any page with the ☆ icon, then open <b>⋮ → Bookmarks</b> and edit it.</li>
+      <li>Rename it <b>Attendance</b> and replace the URL with what you copied.</li>
+      <li>On a course page, type <b>Attendance</b> in the address bar and tap the bookmark result.</li>
+    </ol>
+    <p class="hint">Chrome on Android won't run a bookmarklet you tap from the bookmarks list — you have
+      to pick it from the address bar. Safari has no such limitation.</p>
+  </section>
+
+  <figure>
+    <img src="screenshots/mobile.png" alt="The attendance sheet open over the portal on a phone" />
+    <figcaption>What you get, over whatever portal page you were on.</figcaption>
+  </figure>
+
+  <section>
+    <h2>What it actually does</h2>
+    <p>It runs on the portal's own page, so it uses the session already in your browser. It reads your
+      attendance from the same portal API the site itself uses, works out the combined lecture + lab
+      figure per subject, and shows it in a sheet. Tap it again to close.</p>
+    <p class="note">It refuses to run anywhere except <code>my.newtonschool.co</code>. Nothing is typed
+      in, nothing is sent to any server, and no account details leave your phone. Your target and term
+      schedule are saved on that phone only, separately from the desktop extension — there is no server
+      to sync them through.</p>
+    <p class="hint">The bookmarklet loads its code from this page's own site, so it updates when the
+      project does. The source is in the <a href="https://github.com/yats0x7/nst-attendance">repository</a>;
+      it is built from the extension's own files, so the phone and the desktop card always agree.</p>
+  </section>
+
+  <footer>
+    <a href="https://github.com/yats0x7/nst-attendance">github.com/yats0x7/nst-attendance</a> · MIT
+  </footer>
+</div>
+
+<script>
+  // Build the loader from this page's own origin so a fork or a local copy
+  // serves its own bundle rather than pointing back here.
+  var src = new URL('nst-mobile.js', location.href).href;
+  var code = "javascript:(function(){var d=document,s=d.createElement('script');" +
+    "s.src='" + src + "?v='+Date.now();" +
+    "(d.body||d.documentElement).appendChild(s);})()";
+
+  document.getElementById('blink').setAttribute('href', code);
+  document.getElementById('code').value = code;
+
+  document.getElementById('copy').addEventListener('click', async function () {
+    var box = document.getElementById('code');
+    var done = document.getElementById('done');
+    try {
+      await navigator.clipboard.writeText(code);
+      done.textContent = 'Copied';
+    } catch (e) {
+      // Older mobile Safari, or a page without clipboard permission.
+      box.focus();
+      box.select();
+      done.textContent = document.execCommand('copy') ? 'Copied' : 'Select the text above and copy it';
+    }
+    setTimeout(function () { done.textContent = ''; }, 2500);
+  });
+
+  // A tapped bookmarklet link does nothing useful here; say so rather than
+  // navigating the page to a javascript: URL.
+  document.getElementById('blink').addEventListener('click', function (e) {
+    e.preventDefault();
+    document.getElementById('done').textContent = 'Drag it to your bookmarks bar, or tap Copy.';
+    setTimeout(function () { document.getElementById('done').textContent = ''; }, 3000);
+  });
+</script>
+</body>
+</html>
