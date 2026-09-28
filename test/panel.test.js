@@ -123,3 +123,15 @@ test('verdict never leaks raw HTML from data — only its own markup', () => {
   const html = verdictText(summarize([{ held: 20, attended: 18 }]));
   assert.doesNotMatch(html, /<(?!\/?strong>|\/?span( class="rest")?>)/, 'only <strong> and the qualifier span are emitted');
 });
+
+test('the schedule pointer follows the surface it is rendered on', async () => {
+  const { setSettingsWhere } = await import('../src/content/panel.js');
+  const strip = (s) => verdictText(s).replace(/<[^>]+>/g, '');
+  const belowTarget = summarize([{ held: 20, attended: 10 }]);
+
+  assert.match(strip(belowTarget), /add your term schedule in Settings/);
+  setSettingsWhere('below');
+  assert.match(strip(belowTarget), /add your term schedule below/);
+  assert.doesNotMatch(strip(belowTarget), /Settings/);
+  setSettingsWhere('in Settings'); // leave the default for other tests
+});

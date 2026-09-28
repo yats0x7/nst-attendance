@@ -13,6 +13,8 @@
 
 (function mountSheet() {
   const HOST_ID = 'nst-mobile-sheet';
+  // There is no Settings page on a phone; the controls sit under the list.
+  setSettingsWhere('below');
   const existing = document.getElementById(HOST_ID);
   if (existing) {
     // Running the bookmarklet again closes it, so the same tap toggles.

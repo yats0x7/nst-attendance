@@ -1344,6 +1344,18 @@ function orderSubjects(subjects) {
 }
 
 /**
+ * Where the schedule controls live, which differs by surface: the extension has
+ * a Settings page, the phone sheet puts them directly under the list. Copy that
+ * points somewhere the reader cannot go is worse than no pointer at all.
+ */
+let settingsWhere = 'in Settings';
+
+/** @param {string} where e.g. 'in Settings' or 'below' */
+function setSettingsWhere(where) {
+  settingsWhere = where;
+}
+
+/**
  * A recovery streak longer than this is arithmetic, not a plan. Without a
  * schedule the card cannot know whether that many classes are even left, so it
  * says so instead of presenting the number as an instruction.
@@ -1374,7 +1386,7 @@ function verdictText(summary) {
 
     case 'unreachable': {
       if (!projection) {
-        return `<strong>Below ${targetLabel}.</strong> ${rest('Add your term schedule in Settings to see whether it is still reachable.')}`;
+        return `<strong>Below ${targetLabel}.</strong> ${rest(`Add your term schedule ${settingsWhere} to see whether it is still reachable.`)}`;
       }
       const best = `${(projection.bestReachable * 100).toFixed(1)}%`;
       return `<strong>${targetLabel} is out of reach this term.</strong> ${rest(
@@ -1397,7 +1409,7 @@ function verdictText(summary) {
       }
       if (need > PLAUSIBLE_STREAK) {
         return `<strong>Attend every class from here.</strong> ${rest(
-          `Whether ${targetLabel} is still reachable depends on how many classes are left — add your term schedule in Settings to find out.`
+          `Whether ${targetLabel} is still reachable depends on how many classes are left — add your term schedule ${settingsWhere} to find out.`
         )}`;
       }
       return `<strong>Attend the next ${plural(need, 'class', 'classes')} in a row</strong> ${rest(`to reach ${targetLabel}.`)}`;
@@ -1496,7 +1508,7 @@ function renderRow(state, subject, opened) {
     : '';
 
   const overrunLine = subject.overrun
-    ? `<div class="hintline">Your term schedule says this subject has ended, but classes are still running — fix it in Settings.</div>`
+    ? `<div class="hintline">Your term schedule says this subject has ended, but classes are still running — fix it ${settingsWhere}.</div>`
     : '';
 
   return `
@@ -1731,6 +1743,8 @@ function saveSettingsSync(patch) {
 
 (function mountSheet() {
   const HOST_ID = 'nst-mobile-sheet';
+  // There is no Settings page on a phone; the controls sit under the list.
+  setSettingsWhere('below');
   const existing = document.getElementById(HOST_ID);
   if (existing) {
     // Running the bookmarklet again closes it, so the same tap toggles.
