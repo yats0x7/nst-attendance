@@ -252,17 +252,6 @@ notes taken from the changelog section for that version. CI blocks a push where 
 disagree, where `docs/nst-mobile.js` is older than the source it was built from, or where the
 version has no changelog entry.
 
-## Related projects
-
-Other people have built things for this portal, and they solve different parts of the problem:
-
-- **[Newton+](https://newton-brown.vercel.app/)** — attendance tracking with manually created
-  subject groups, custom per-group thresholds, and a dark theme for the whole portal. Closed
-  source, desktop only.
-- **[suwupnil/newNewton](https://github.com/suwupnil/newNewton)** — an MV3 extension for the portal
-  doing theme switching and tracker blocking.
-
-If you maintain something for this portal and want it listed, open a pull request.
 
 ## Contributing
 
