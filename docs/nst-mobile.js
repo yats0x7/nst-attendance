@@ -1,4 +1,4 @@
-/* NST Attendance — mobile bookmarklet, v0.2.0
+/* NST Attendance — mobile bookmarklet, v1.0.0
  * https://github.com/yats0x7/nst-attendance
  *
  * Built from the extension's own source by scripts/build-mobile.mjs. Runs only

@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "NST Attendance",
-  "version": "0.2.0",
+  "version": "1.0.0",
   "description": "Combined subject + lab attendance for the Newton School portal, and how many classes you can still skip.",
   "minimum_chrome_version": "110",
   "permissions": [

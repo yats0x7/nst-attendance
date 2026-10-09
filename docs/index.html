@@ -41,7 +41,8 @@
   figure { margin: 22px 0 0; text-align: center; }
   figure img { width: 100%; max-width: 300px; border-radius: 14px; border: 1px solid var(--line); }
   figcaption { color: var(--ink-3); font-size: .8rem; margin-top: 8px; }
-  footer { color: var(--ink-3); font-size: .875rem; margin-top: 34px; text-align: center; }
+  footer { color: var(--ink-3); font-size: .875rem; margin-top: 34px; text-align: center; line-height: 1.9; }
+  #ver:empty { display: none; }
 </style>
 </head>
 <body>
@@ -116,7 +117,11 @@
   </section>
 
   <footer>
-    <a href="https://github.com/yats0x7/nst-attendance">github.com/yats0x7/nst-attendance</a> · MIT
+    <a href="https://github.com/yats0x7/nst-attendance">github.com/yats0x7/nst-attendance</a> ·
+    <a href="https://github.com/yats0x7/nst-attendance/releases">Releases</a> ·
+    <a href="https://github.com/yats0x7/nst-attendance/blob/main/CHANGELOG.md">Changelog</a> ·
+    <a href="https://github.com/yats0x7/nst-attendance/blob/main/PRIVACY.md">Privacy</a> · MIT
+    <br /><span id="ver"></span>
   </footer>
 </div>
 
@@ -130,6 +135,16 @@
 
   document.getElementById('blink').setAttribute('href', code);
   document.getElementById('code').value = code;
+
+  // Read the version out of the bundle this page actually serves, rather than
+  // printing one that was true when the page was written.
+  fetch(src, { cache: 'no-store' })
+    .then(function (r) { return r.ok ? r.text() : ''; })
+    .then(function (text) {
+      var found = /mobile bookmarklet, v(\d+\.\d+\.\d+)/.exec(text);
+      if (found) document.getElementById('ver').textContent = 'Bookmarklet version ' + found[1];
+    })
+    .catch(function () {});
 
   document.getElementById('copy').addEventListener('click', async function () {
     var box = document.getElementById('code');

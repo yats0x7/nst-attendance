@@ -1,6 +1,6 @@
 {
   "name": "nst-attendance",
-  "version": "0.2.0",
+  "version": "1.0.0",
   "type": "module",
   "description": "Chrome extension that combines lecture and lab attendance per subject on the Newton School portal, and tells you how many classes you can still skip.",
   "scripts": {
