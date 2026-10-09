@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 
 import {
   DEFAULT_SCHEDULE,
+  SCHEDULE_PRESET,
   totalClasses,
   remainingClasses,
   scheduleOverrun,
@@ -121,4 +122,19 @@ test('overstating the term length is what makes the budget wrong', () => {
   const actualAttended = 14 + (22 - skips);
   const actualHeld = 15 + 22;
   assert.ok(actualAttended / actualHeld < 0.75, 'over-long term overstates the budget');
+});
+
+test('the offered preset is exactly what the form already pre-fills', () => {
+  // The settings page and the phone sheet both label a control with these
+  // numbers. If they ever drifted from the defaults the form shows, the button
+  // would promise one term and the fields would display another.
+  assert.equal(DEFAULT_SCHEDULE.weeks, SCHEDULE_PRESET.weeks);
+  assert.equal(DEFAULT_SCHEDULE.perWeek, SCHEDULE_PRESET.perWeek);
+  assert.equal(DEFAULT_SCHEDULE.enabled, false, 'a schedule nobody confirmed must stay off');
+});
+
+test('the preset produces a usable term, not a placeholder', () => {
+  const schedule = { ...DEFAULT_SCHEDULE, ...SCHEDULE_PRESET, enabled: true };
+  assert.equal(totalClasses('ada', schedule), 48);
+  assert.equal(remainingClasses('ada', 12, schedule), 36);
 });

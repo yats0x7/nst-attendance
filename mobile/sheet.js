@@ -182,10 +182,14 @@
         thead th { font-size: .75rem; color: #5f6672; }
         .tot { font-size: .75rem; color: #5f6672; }
         .note { margin: 10px 0 0; font-size: .75rem; color: #5f6672; }
+        .preset { width: 100%; min-height: 44px; margin: 10px 0 0; padding: 10px 14px;
+          font: inherit; font-weight: 600; border: 1px solid #111318; border-radius: 10px;
+          background: #111318; color: #fff; cursor: pointer; }
         @media (prefers-color-scheme: dark) {
           .row, details { border-color: #2a2c30; }
           input[type=number] { border-color: #6b7280; }
           thead th, .tot, .note { color: #a1a5ad; }
+          .preset { background: #e8e8ea; color: #17181a; border-color: #e8e8ea; }
         }
       </style>
       <div class="row">
@@ -194,6 +198,9 @@
         </label>
         <label><input id="se" type="checkbox" ${sched.enabled ? 'checked' : ''}> I know my term schedule</label>
       </div>
+      ${sched.enabled ? '' : `
+      <button class="preset" id="sx" type="button">Use ${SCHEDULE_PRESET.weeks} weeks &times; ${SCHEDULE_PRESET.perWeek} classes a week</button>
+      <p class="note">That is ${SCHEDULE_PRESET.label}. Tap it to see how many of your remaining classes you can miss, then adjust anything that does not match your timetable.</p>`}
       ${sched.enabled ? `
       <details${rows ? '' : ' hidden'}>
         <summary>Term schedule — ${sched.weeks} weeks × ${sched.perWeek} classes/week by default</summary>
@@ -217,6 +224,16 @@
     });
     prefsSlot.querySelector('#se').addEventListener('change', (e) => {
       save({ schedule: { ...settings.schedule, enabled: e.target.checked } });
+    });
+    prefsSlot.querySelector('#sx')?.addEventListener('click', () => {
+      save({
+        schedule: {
+          ...settings.schedule,
+          enabled: true,
+          weeks: SCHEDULE_PRESET.weeks,
+          perWeek: SCHEDULE_PRESET.perWeek,
+        },
+      });
     });
     prefsSlot.querySelector('#sw')?.addEventListener('change', (e) => {
       save({ schedule: { ...settings.schedule, weeks: num(e.target) ?? 12 } });

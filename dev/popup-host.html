@@ -34,7 +34,13 @@
       sync: areaOf('sync'), local: areaOf('local'),
       onChanged: { addListener(fn) { listeners.push(fn); } },
     },
-    runtime: { openOptionsPage() { window.__shimLog.push('openOptionsPage'); } },
+    runtime: {
+      openOptionsPage() { window.__shimLog.push('openOptionsPage'); },
+      // Filled from the real manifest below, so the preview cannot show a
+      // version the extension does not have.
+      getManifest: () => ({ version: '0.0.0-dev' }),
+      getURL: (path) => new URL('../' + path, location.href).href,
+    },
     tabs: {
       async create(o) { window.__shimLog.push('tabs.create ' + o.url); return { id: 99 }; },
       async query() { return seed ? [{ id: 7, url: 'https://my.newtonschool.co/course/smstr00000001/details' }] : []; },
@@ -52,6 +58,9 @@
   };
 </script>
 <script type="module">
+  const manifest = await (await fetch('../manifest.json')).json();
+  window.chrome.runtime.getManifest = () => manifest;
+
   const html = await (await fetch('../src/popup/popup.html')).text();
   const doc = new DOMParser().parseFromString(html, 'text/html');
   document.head.append(...doc.head.querySelectorAll('style'));

@@ -38,8 +38,14 @@
   button.link { border: none; background: none; color: #b91c1c; padding: 6px 8px; }
   .actions { display: flex; align-items: center; gap: 12px; margin-top: 16px; }
   .status { color: #15803d; font-size: 13px; min-height: 1.5em; }
+  #sched-status { margin: 0; min-height: 0; }
+  #sched-status:not(:empty) { margin: 10px 0 0; }
   .check { display: flex; align-items: center; gap: 8px; margin: 4px 0 0; cursor: pointer; min-height: 24px; }
   .defaults { margin: 16px 0 0; gap: 8px; flex-wrap: wrap; }
+  .setup { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 12px; }
+  .setup .hint { margin: 0; flex: 1 1 14rem; }
+  :is(.setup, .check)[hidden] { display: none; }
+  .setup button { flex: 0 0 auto; }
   .defaults input[type=number] { width: 64px; flex: 0 0 auto; }
   td.total { color: #4b5563; font-variant-numeric: tabular-nums; white-space: nowrap; }
   td input[type=number] { width: 88px; }
@@ -75,7 +81,7 @@
     </div>
   </section>
 
-  <section>
+  <section id="schedule">
     <h2>Term schedule <span class="badge">optional</span></h2>
     <p class="hint">
       The portal only publishes about a week of timetable, so it can't tell how many classes are
@@ -85,10 +91,16 @@
     <p class="hint">
       Leave it off and everything still works; you just get the safe short-range number.
     </p>
-    <label class="check">
+    <label class="check" id="sched-toggle" hidden>
       <input type="checkbox" id="sched-enabled" />
       <span>I know my term schedule</span>
     </label>
+    <div class="setup" id="sched-setup" hidden>
+      <button type="button" class="primary" id="sched-preset"></button>
+      <button type="button" id="sched-own">Set it up myself</button>
+      <span class="hint" id="sched-preset-hint"></span>
+    </div>
+    <p class="status" id="sched-status" role="status"></p>
     <div id="sched-body" hidden>
       <div class="target-row defaults">
         <span>By default</span>

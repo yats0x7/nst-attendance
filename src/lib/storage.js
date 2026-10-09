@@ -45,6 +45,10 @@ export const DEFAULT_SETTINGS = Object.freeze({
   overrides: {},
   /** The student's own timetable; see lib/schedule.js. */
   schedule: DEFAULT_SCHEDULE,
+  /** Set once the student has either set up a term schedule or waved the
+   *  prompt away. Onboarding that reappears after being dismissed is nagging,
+   *  and this is the only thing the extension needs to remember to avoid it. */
+  scheduleTipDismissed: false,
 });
 
 function area(name) {
@@ -79,6 +83,7 @@ export function normalizeSettings(raw) {
   if (!settings.schedule.perSubject || typeof settings.schedule.perSubject !== 'object') {
     settings.schedule.perSubject = {};
   }
+  settings.scheduleTipDismissed = settings.scheduleTipDismissed === true;
   return settings;
 }
 

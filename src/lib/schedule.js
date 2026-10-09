@@ -14,12 +14,26 @@
  * Pure and dependency-free, so it runs under `node --test`.
  */
 
+/**
+ * The term most students on this portal are actually on, offered as a starting
+ * point rather than applied silently. Every surface that offers it states these
+ * numbers in the control itself, so clicking it is the student confirming their
+ * own timetable — not the extension guessing one. A wrong projection would cost
+ * someone a class they could not afford, which is why nothing enables this for
+ * them.
+ */
+export const SCHEDULE_PRESET = Object.freeze({
+  label: 'the standard NST term',
+  weeks: 12,
+  perWeek: 4,
+});
+
 export const DEFAULT_SCHEDULE = Object.freeze({
   /** Off until the student fills in their own timetable. */
   enabled: false,
-  weeks: 12,
+  weeks: SCHEDULE_PRESET.weeks,
   /** Classes per week for the whole subject — lectures and labs together. */
-  perWeek: 4,
+  perWeek: SCHEDULE_PRESET.perWeek,
   /** key -> { weeks?, perWeek? }, for subjects that run differently. */
   perSubject: {},
 });

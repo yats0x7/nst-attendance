@@ -12,14 +12,18 @@
 
 import { renderPanel, createPanelHost } from '../content/panel.js';
 import { rehydrate, isCourseDetailsUrl } from '../lib/portal.js';
-import { getSettings, readLatestCache, onCacheChanged } from '../lib/storage.js';
+import { getSettings, saveSettings, readLatestCache, onCacheChanged } from '../lib/storage.js';
 
 const PORTAL_URL = 'https://my.newtonschool.co/';
 const PORTAL_MATCH = 'https://my.newtonschool.co/*';
+const RELEASES_URL = 'https://github.com/yats0x7/nst-attendance/releases';
+/** Deep link, so the prompt lands on the control that answers it. */
+const SCHEDULE_SETTINGS = 'src/options/options.html#schedule';
 
 const mountPoint = document.getElementById('panel');
 const hint = document.getElementById('hint');
 const hintAction = document.getElementById('hint-action');
+const setup = document.getElementById('setup');
 const { host, root } = createPanelHost();
 mountPoint.append(host);
 
@@ -40,8 +44,39 @@ function offerOpenPortal() {
   hintAction.append(btn);
 }
 
+/*
+ * Term projections are off until a student states their own timetable, so the
+ * one feature that answers "can I skip this week" stays invisible unless
+ * something points at it. This is that pointer: one line, one route to the
+ * control, and it never comes back once answered or waved away.
+ *
+ * It routes rather than applying a default, because a projection built on a
+ * schedule nobody confirmed is exactly the number that gets someone to skip a
+ * class they could not afford.
+ */
+document.getElementById('setup-text').textContent =
+  'Set your term schedule to see how many classes you can still miss.';
+
+document.getElementById('setup-go').addEventListener('click', () => {
+  chrome.tabs.create({ url: chrome.runtime.getURL(SCHEDULE_SETTINGS) });
+});
+
+document.getElementById('setup-dismiss').addEventListener('click', async () => {
+  await saveSettings({ scheduleTipDismissed: true });
+  setup.hidden = true;
+});
+
+const { version } = chrome.runtime.getManifest();
+document.getElementById('version').textContent = `Version ${version}`;
+// Loaded unpacked, nothing updates itself — the link is the only way a student
+// finds out a newer build exists, so it says what it does rather than claiming
+// to know.
+document.getElementById('updates').href = RELEASES_URL;
+
 async function paint() {
   const [settings, cached] = await Promise.all([getSettings(), readLatestCache()]);
+
+  setup.hidden = settings.schedule.enabled || settings.scheduleTipDismissed;
 
   if (!cached?.data) {
     renderPanel(

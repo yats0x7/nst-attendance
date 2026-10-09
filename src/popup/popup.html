@@ -22,19 +22,56 @@
   .bar button:focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; }
   #hint { min-height: 1.4em; }
   #hint:empty { display: none; }
+  /* The setup prompt and the version line are the popup's own chrome, sharing
+     the bar's quiet 12px voice so neither competes with the card above. */
+  .strip {
+    display: flex; align-items: baseline; justify-content: space-between; gap: 10px;
+    padding: 10px 16px;
+    border-top: 1px solid #e5e7eb;
+    font: 0.75rem/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: #4b5563;
+  }
+  .strip.top { border-top: 0; border-bottom: 1px solid #e5e7eb; padding: 12px 16px; }
+  .strip p { margin: 0; flex: 1 1 auto; }
+  .strip .acts { display: flex; align-items: baseline; gap: 10px; flex: 0 0 auto; white-space: nowrap; }
+  .strip button, .strip a {
+    font: inherit; color: #4b5563; background: none; border: 0; padding: 4px 0; min-height: 24px;
+    cursor: pointer; text-decoration: underline; text-underline-offset: 2px; border-radius: 4px;
+  }
+  .strip button.go { color: #111318; font-weight: 600; }
+  .strip button:hover, .strip a:hover { color: #111318; }
+  .strip :is(button, a):focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; }
+  #setup[hidden] { display: none; }
   @media (prefers-color-scheme: dark) {
     body { background: #0d0e10; }
     .bar, .bar button { color: #b4b8bf; }
     .bar button:hover { color: #fff; }
     .bar button:focus-visible { outline-color: #60a5fa; }
+    .strip { border-top-color: #2a2c30; color: #b4b8bf; }
+    .strip.top { border-bottom-color: #2a2c30; }
+    .strip button, .strip a { color: #b4b8bf; }
+    .strip button.go { color: #e8e8ea; }
+    .strip button:hover, .strip a:hover { color: #fff; }
+    .strip :is(button, a):focus-visible { outline-color: #60a5fa; }
   }
 </style>
 </head>
 <body>
+  <div class="strip top" id="setup" hidden>
+    <p id="setup-text"></p>
+    <span class="acts">
+      <button type="button" class="go" id="setup-go">Set it up</button>
+      <button type="button" id="setup-dismiss">Not now</button>
+    </span>
+  </div>
   <div id="panel"></div>
   <div class="bar">
     <span id="hint" role="status"></span>
     <span id="hint-action"></span>
+  </div>
+  <div class="strip" id="foot">
+    <p id="version"></p>
+    <span class="acts"><a id="updates" href="#" target="_blank" rel="noreferrer noopener">Check for updates</a></span>
   </div>
   <script type="module" src="popup.js"></script>
 </body>

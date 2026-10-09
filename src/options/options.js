@@ -8,7 +8,7 @@ import {
 } from '../lib/storage.js';
 import { groupUnits, normalizeKey } from '../lib/grouping.js';
 import { combine } from '../lib/math.js';
-import { totalClasses } from '../lib/schedule.js';
+import { totalClasses, SCHEDULE_PRESET } from '../lib/schedule.js';
 
 const range = document.getElementById('target-range');
 const number = document.getElementById('target-number');
@@ -91,8 +91,53 @@ const schedPerWeek = document.getElementById('sched-perweek');
 const schedRows = document.getElementById('sched-rows');
 const schedNote = document.getElementById('sched-note');
 
-schedEnabled.addEventListener('change', () => {
+const schedSetup = document.getElementById('sched-setup');
+const schedPreset = document.getElementById('sched-preset');
+
+/*
+ * The term schedule is the best thing this extension does and it ships off,
+ * because a schedule the student never confirmed would produce a budget they
+ * might act on. So the prompt is a control that states the numbers it will
+ * set: clicking it is the confirmation, and it is the only click needed.
+ */
+schedPreset.textContent = `Use ${SCHEDULE_PRESET.weeks} weeks \u00d7 ${SCHEDULE_PRESET.perWeek} classes a week`;
+document.getElementById('sched-preset-hint').textContent =
+  `That is ${SCHEDULE_PRESET.label} for most subjects. Check it against your own timetable — you can change any of it below.`;
+
+/**
+ * Off and on are different jobs, so they get different controls. While it is
+ * off the section asks one question and offers the two answers to it; once it
+ * is on, the checkbox is simply the way back out.
+ */
+function syncScheduleUi() {
   schedBody.hidden = !schedEnabled.checked;
+  schedSetup.hidden = schedEnabled.checked;
+  document.getElementById('sched-toggle').hidden = !schedEnabled.checked;
+}
+
+schedEnabled.addEventListener('change', syncScheduleUi);
+
+// The other answer: reveal the fields without committing to numbers nobody
+// has checked yet. Saving is then the student's own deliberate act.
+document.getElementById('sched-own').addEventListener('click', () => {
+  schedEnabled.checked = true;
+  syncScheduleUi();
+  refreshTotals();
+  schedWeeks.focus();
+});
+
+schedPreset.addEventListener('click', async () => {
+  schedEnabled.checked = true;
+  schedWeeks.value = String(SCHEDULE_PRESET.weeks);
+  schedPerWeek.value = String(SCHEDULE_PRESET.perWeek);
+  syncScheduleUi();
+  refreshTotals();
+  await save('Saved. Open portal pages update on their own.');
+  flashInto(
+    document.getElementById('sched-status'),
+    'Term projections are on. Adjust anything below that does not match your timetable.'
+  );
+  schedWeeks.focus();
 });
 
 /** Read the schedule straight off the form, so previews match what will save. */
@@ -197,21 +242,32 @@ async function buildSubjectRows(settings) {
   refreshTotals();
 }
 
-function flash(message) {
-  status.textContent = message;
+function flashInto(el, message) {
+  el.textContent = message;
   setTimeout(() => {
-    if (status.textContent === message) status.textContent = '';
-  }, 2500);
+    if (el.textContent === message) el.textContent = '';
+  }, 4000);
 }
 
-document.getElementById('save').addEventListener('click', async () => {
+function flash(message) {
+  flashInto(status, message);
+}
+
+async function save(message) {
   await saveSettings({
     targetPercent: Number(number.value),
     overrides: readOverrides(),
     schedule: readSchedule(),
+    // Reaching this page and saving is itself an answer to the prompt, whether
+    // the schedule went on or not.
+    scheduleTipDismissed: true,
   });
-  flash('Saved. Open portal pages update on their own.');
-});
+  flash(message);
+}
+
+document.getElementById('save').addEventListener('click', () =>
+  save('Saved. Open portal pages update on their own.')
+);
 
 document.getElementById('clear-cache').addEventListener('click', async () => {
   await clearCache();
@@ -229,7 +285,15 @@ for (const [name, group] of existing) addRow(name, group);
 if (existing.length) document.querySelector('details').open = true;
 
 schedEnabled.checked = settings.schedule.enabled;
-schedBody.hidden = !settings.schedule.enabled;
 schedWeeks.value = String(settings.schedule.weeks);
 schedPerWeek.value = String(settings.schedule.perWeek);
+syncScheduleUi();
 await buildSubjectRows(settings);
+
+// The popup's prompt opens this page at #schedule. Land on the control that
+// answers it rather than at the top of the form.
+if (location.hash === '#schedule') {
+  const target = schedEnabled.checked ? schedWeeks : schedPreset;
+  document.getElementById('schedule').scrollIntoView({ block: 'center' });
+  target.focus({ preventScroll: true });
+}

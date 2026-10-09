@@ -17,6 +17,12 @@
     "service_worker": "src/background.js",
     "type": "module"
   },
+  "commands": {
+    "_execute_action": {
+      "suggested_key": { "default": "Alt+Shift+A" },
+      "description": "Show your attendance"
+    }
+  },
   "action": {
     "default_title": "NST Attendance",
     "default_icon": {
