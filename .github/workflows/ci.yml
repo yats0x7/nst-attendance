@@ -52,7 +52,7 @@ jobs:
       - run: npm run package
       # So a reviewer can load the exact build a pull request produces rather
       # than trusting that it still packages.
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: nst-attendance-unpacked
           path: dist/*.zip
