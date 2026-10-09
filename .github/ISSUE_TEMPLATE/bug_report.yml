@@ -1,0 +1,66 @@
+name: Something is wrong
+description: A number looks wrong, the card does not appear, or something breaks.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please do not paste screenshots that show your name, roll number or
+        email. The numbers and course names are all that is needed here.
+
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What you saw, and what you expected instead.
+    validations:
+      required: true
+
+  - type: textarea
+    id: numbers
+    attributes:
+      label: The numbers involved
+      description: >
+        If a percentage or a skip count looks wrong, the figures it was worked
+        out from settle it quickly: the attended and held counts the portal
+        shows for the subject and for its lab, and what the card said.
+      placeholder: |
+        Portal: ADA - B 12/12, ADA Lab 2 - B 9/10
+        Card said: 89.3%, can skip 1 more
+        Expected: ...
+
+  - type: dropdown
+    id: surface
+    attributes:
+      label: Where
+      options:
+        - The card on the portal page
+        - The toolbar popup
+        - The settings page
+        - The phone bookmarklet
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: Shown at the bottom of the toolbar popup.
+      placeholder: "1.0.0"
+    validations:
+      required: true
+
+  - type: input
+    id: browser
+    attributes:
+      label: Browser and OS
+      placeholder: Chrome 141 on Windows 11
+
+  - type: textarea
+    id: console
+    attributes:
+      label: Console output
+      description: >
+        Optional, and often decisive. Right-click the page, Inspect, Console
+        tab, and copy anything mentioning NST Attendance.
+      render: text

@@ -5,8 +5,12 @@
   "description": "Chrome extension that combines lecture and lab attendance per subject on the Newton School portal, and tells you how many classes you can still skip.",
   "scripts": {
     "test": "node --test test/*.test.js",
+    "check": "node scripts/check-release.mjs",
+    "build:mobile": "node scripts/build-mobile.mjs",
     "package": "node scripts/build-mobile.mjs && sh scripts/package.sh",
-    "build:mobile": "node scripts/build-mobile.mjs"
+    "shots:store": "sh dev/shots/capture.sh",
+    "set-version": "node scripts/set-version.mjs",
+    "serve": "python3 dev/serve.py 8731"
   },
   "license": "MIT",
   "author": "Yatharth Katta",
@@ -23,5 +27,13 @@
     "attendance",
     "newton-school",
     "manifest-v3"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "files": [
+    "manifest.json",
+    "icons",
+    "src"
   ]
 }

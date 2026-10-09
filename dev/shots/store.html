@@ -1,0 +1,150 @@
+<!doctype html>
+<meta charset="utf-8" />
+<title>Store tile fixture</title>
+<!--
+  Chrome Web Store screenshots have to be exactly 1280x800. This renders one
+  tile at that size using the shipped modules, so a listing image can never
+  show a card the extension does not actually draw. Harness only; not shipped.
+
+  dev/shots/store.html?tile=1 .. 5   (&dark=1 on the tiles that support it)
+-->
+<style>
+  html, body { margin: 0; }
+  body {
+    width: 1280px; height: 800px; overflow: hidden;
+    display: grid; grid-template-columns: 420px 1fr; align-items: center; gap: 56px;
+    padding: 0 72px; box-sizing: border-box;
+    background: #f1f2f4; color: #111318;
+    font: 16px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  body.dark { background: #0a0b0c; color: #e8e8ea; }
+  h1 { font-size: 40px; line-height: 1.12; letter-spacing: -0.025em; margin: 0 0 18px; text-wrap: balance; }
+  p { font-size: 18px; line-height: 1.5; color: #4b5563; margin: 0; }
+  body.dark p { color: #a1a5ad; }
+  .stage { display: flex; justify-content: center; align-items: center; min-width: 0; }
+  /* The card already draws its own surface, border and radius. A framing box
+     behind it would be a card inside a card, so the lift is a drop-shadow,
+     which follows the shape the card actually paints — including its corners
+     and its own vertical margin, which stays transparent. */
+  .frame {
+    filter: drop-shadow(0 16px 32px rgba(16, 18, 22, 0.17)) drop-shadow(0 2px 4px rgba(16, 18, 22, 0.08));
+  }
+  body.dark .frame {
+    filter: drop-shadow(0 16px 32px rgba(0, 0, 0, 0.65)) drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
+  }
+  .frame.wide { width: 100%; max-width: 660px; }
+  /* Compact mode draws no border or radius, because in the real popup the
+     browser's own window supplies both. The tile has to stand in for it. */
+  .frame.narrow {
+    width: 360px; background: #fff; border-radius: 12px; overflow: hidden;
+  }
+  body.dark .frame.narrow { background: #17181a; }
+</style>
+<div class="copy">
+  <h1 id="h"></h1>
+  <p id="s"></p>
+</div>
+<div class="stage"><div class="frame" id="frame"></div></div>
+
+<script type="module">
+  import { rehydrate } from '../../src/lib/portal.js';
+  import { renderPanel, createPanelHost } from '../../src/content/panel.js';
+
+  const q = new URLSearchParams(location.search);
+  const dark = q.get('dark') === '1';
+  if (dark) document.body.classList.add('dark');
+
+  const TERM = { enabled: true, weeks: 12, perWeek: 4, perSubject: { lhl: { weeks: 10, perWeek: 1 } } };
+  const UNITS = [
+    { name: 'ADA - B', held: 12, attended: 12 },
+    { name: 'ADA Lab 2 - B', held: 10, attended: 9 },
+    { name: 'AP - B', held: 12, attended: 10 },
+    { name: 'DE - B', held: 11, attended: 11 },
+    { name: 'DE Lab 2 - B', held: 11, attended: 11 },
+    { name: 'Maths III - B', held: 12, attended: 9 },
+    { name: 'Maths III Lab 2 - B', held: 10, attended: 6 },
+  ];
+  const MISSED = [
+    { hash: 'a', title: 'Eigenvalues and Eigenvectors', start: '2026-09-02T09:00:00+05:30', component: 'Lecture', waived: false },
+    { hash: 'b', title: 'Lab 6: Laplace transforms', start: '2026-08-27T10:30:00+05:30', component: 'Lab', waived: false },
+    { hash: 'c', title: 'Lab 5: Matrix decomposition', start: '2026-08-25T10:30:00+05:30', component: 'Lab', waived: true },
+    { hash: 'd', title: 'Fourier Series II', start: '2026-08-19T09:00:00+05:30', component: 'Lecture', waived: false },
+  ];
+
+  const TILES = {
+    1: {
+      h: 'Your subject and its lab, counted as one',
+      s: 'The portal lists ADA and ADA Lab as separate courses. This adds the raw class counts and shows the combined figure — the one your eligibility is actually judged on.',
+      schedule: { enabled: false },
+      width: 'wide',
+    },
+    2: {
+      h: 'How many classes you can still miss',
+      s: 'Tell it how long your term runs and it stops guessing at today. Every subject gets a budget over the classes you have left, and a warning the moment 75% stops being reachable.',
+      schedule: TERM,
+      width: 'wide',
+    },
+    3: {
+      h: 'The exact classes you missed',
+      s: 'Open any subject for the dates you were marked absent, which was a lecture and which a lab, and which ones were waived.',
+      schedule: TERM,
+      width: 'wide',
+      expand: 'maths iii',
+    },
+    4: {
+      h: 'Check it without opening the portal',
+      s: 'The toolbar popup shows the same numbers from the last load, and badges itself when a subject drops below your target. Alt+Shift+A opens it.',
+      schedule: TERM,
+      width: 'narrow',
+      compact: true,
+    },
+    5: {
+      h: 'Nothing leaves your browser',
+      s: 'No backend, no analytics, no third-party code. It reads the portal with the session you are already logged into, and can reach no other site. Open source, MIT.',
+      schedule: TERM,
+      width: 'wide',
+    },
+  };
+
+  const tile = TILES[q.get('tile') ?? '1'];
+  document.getElementById('h').textContent = tile.h;
+  document.getElementById('s').textContent = tile.s;
+
+  const frame = document.getElementById('frame');
+  frame.classList.add(tile.width);
+
+  const settings = { targetPercent: 75, overrides: {}, schedule: tile.schedule };
+  const { host, root } = createPanelHost('shot');
+  frame.append(host);
+
+  /** Pin the palette: headless follows the OS, which would otherwise choose. */
+  function forceTheme(which) {
+    const css = root.querySelector('style[data-nst]').textContent;
+    const re = which === 'dark'
+      ? /@media \(prefers-color-scheme: dark\) \{\s*:host \{([\s\S]*?)\}\s*\}/
+      : /^:host \{([\s\S]*?)\n\}/m;
+    const block = css.match(re);
+    if (!block) return;
+    const s = document.createElement('style');
+    s.textContent = `:host { ${block[1]} }`;
+    root.append(s);
+  }
+
+  renderPanel(
+    root,
+    {
+      status: 'ready',
+      subjects: rehydrate(UNITS, settings),
+      targetPercent: 75,
+      updatedAt: new Date('2026-09-08T09:24:00').getTime(),
+      compact: tile.compact === true,
+      canExpand: Boolean(tile.expand),
+      canOpenSettings: true,
+      expanded: new Set(tile.expand ? [tile.expand] : []),
+      missed: tile.expand ? { [tile.expand]: { status: 'ready', items: MISSED } } : {},
+    },
+    {}
+  );
+  forceTheme(dark ? 'dark' : 'light');
+  document.title = 'ready';
+</script>

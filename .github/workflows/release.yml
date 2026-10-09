@@ -1,0 +1,45 @@
+name: Release
+
+# Tagging is the whole release process: everything below is derived from the
+# tag and from files already in the repository, so a release can never describe
+# something that was not committed.
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+
+      - name: Tag must match the manifest
+        run: |
+          tag="${GITHUB_REF_NAME#v}"
+          manifest=$(node -p "require('./manifest.json').version")
+          if [ "$tag" != "$manifest" ]; then
+            echo "::error::tag $GITHUB_REF_NAME does not match manifest version $manifest"
+            exit 1
+          fi
+
+      - run: npm test
+      - run: node scripts/check-release.mjs
+      - run: npm run package
+
+      - name: Release notes from the changelog
+        run: node scripts/release-notes.mjs "${GITHUB_REF_NAME}" > release-notes.md
+
+      - name: Publish
+        uses: softprops/action-gh-release@v2
+        with:
+          body_path: release-notes.md
+          files: |
+            dist/*.zip
+            docs/nst-mobile.js
+          fail_on_unmatched_files: true

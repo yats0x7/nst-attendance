@@ -1,0 +1,10 @@
+version: 2
+updates:
+  # The extension itself has no dependencies; these are the actions that build
+  # and publish it, which is the only supply chain worth watching here.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    commit-message:
+      prefix: ci

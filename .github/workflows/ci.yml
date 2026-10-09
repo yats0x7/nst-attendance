@@ -1,0 +1,59 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Tests on Node ${{ matrix.node }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # The floor the project supports, and current. There are no
+        # dependencies, so this is the whole compatibility surface.
+        node: ['20', '22']
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: ${{ matrix.node }}
+      - run: npm test
+
+  release-gate:
+    name: Versions, bundle and changelog
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+      - run: node scripts/check-release.mjs
+
+  package:
+    name: Build the extension zip
+    runs-on: ubuntu-latest
+    needs: [test, release-gate]
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+      - run: npm run package
+      # So a reviewer can load the exact build a pull request produces rather
+      # than trusting that it still packages.
+      - uses: actions/upload-artifact@v4
+        with:
+          name: nst-attendance-unpacked
+          path: dist/*.zip
+          if-no-files-found: error

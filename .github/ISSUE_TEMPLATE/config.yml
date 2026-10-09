@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Does this work for my college?
+    url: https://github.com/yats0x7/nst-attendance/discussions
+    about: Questions about other portals, batches or attendance rules.
+  - name: A security problem
+    url: https://github.com/yats0x7/nst-attendance/security/advisories/new
+    about: Report it privately instead of opening an issue.

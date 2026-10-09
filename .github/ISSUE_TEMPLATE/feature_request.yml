@@ -1,0 +1,28 @@
+name: Suggest something
+description: An idea for making this more useful.
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What are you trying to work out
+      description: >
+        The question you are asking yourself when you open the portal, rather
+        than the feature you have in mind. It usually leads somewhere better.
+    validations:
+      required: true
+
+  - type: textarea
+    id: idea
+    attributes:
+      label: What you had in mind
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Anything about your programme that matters
+      description: >
+        Attendance rules differ between batches and colleges. If your idea
+        depends on how yours works, say so here.

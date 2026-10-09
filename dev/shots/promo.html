@@ -1,0 +1,26 @@
+<!doctype html>
+<meta charset="utf-8" />
+<title>Promo tile fixture</title>
+<!--
+  The Chrome Web Store's small promo tile: exactly 440x280, shown beside search
+  results. Typographic, because a card is unreadable at this size. Harness only.
+-->
+<style>
+  html, body { margin: 0; }
+  body {
+    width: 440px; height: 280px; overflow: hidden; box-sizing: border-box;
+    padding: 30px 32px; display: flex; flex-direction: column; justify-content: space-between;
+    /* The icon's own dark squircle, so the tile and the icon read as one thing. */
+    background: #16181b; color: #f4f5f6;
+    font: 15px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  .mark { display: flex; align-items: center; gap: 12px; }
+  .mark img { width: 40px; height: 40px; display: block; }
+  .mark b { font-size: 19px; font-weight: 650; letter-spacing: -0.015em; }
+  h1 { margin: 0; font-size: 31px; line-height: 1.14; letter-spacing: -0.028em; font-weight: 700; text-wrap: balance; }
+  h1 em { font-style: normal; color: #4ade80; }
+  p { margin: 0; font-size: 13.5px; color: #9aa0a8; }
+</style>
+<div class="mark"><img src="../../icons/icon128.png" alt="" /><b>NST Attendance</b></div>
+<h1>Lecture and lab, counted as <em>one subject</em></h1>
+<p>And how many classes you can still miss. my.newtonschool.co</p>

@@ -131,18 +131,24 @@ const PRELUDE = `
   };
 `;
 
-const parts = MODULES.map((rel) => {
-  let code = flatten(readFileSync(join(ROOT, rel), 'utf8'));
-  if (rel === 'src/lib/storage.js') {
-    // See the header: the page has no chrome.storage, and mutating the page's
-    // globals to fake one would outlive the sheet.
-    code = code.replace(/globalThis\.chrome/g, '__nstChrome');
-  }
-  return `// ---- ${rel} ${'-'.repeat(Math.max(0, 62 - rel.length))}\n${code.trim()}\n`;
-});
+/**
+ * Produce the bundle without touching disk, so CI can rebuild it and compare
+ * against the committed copy. A stale `docs/nst-mobile.js` is the one defect
+ * nobody notices: the page keeps serving last release's logic to every phone.
+ */
+export function buildBundle() {
+  const parts = MODULES.map((rel) => {
+    let code = flatten(readFileSync(join(ROOT, rel), 'utf8'));
+    if (rel === 'src/lib/storage.js') {
+      // See the header: the page has no chrome.storage, and mutating the page's
+      // globals to fake one would outlive the sheet.
+      code = code.replace(/globalThis\.chrome/g, '__nstChrome');
+    }
+    return `// ---- ${rel} ${'-'.repeat(Math.max(0, 62 - rel.length))}\n${code.trim()}\n`;
+  });
 
-const version = JSON.parse(readFileSync(join(ROOT, 'manifest.json'), 'utf8')).version;
-const bundle = `/* NST Attendance — mobile bookmarklet, v${version}
+  const version = JSON.parse(readFileSync(join(ROOT, 'manifest.json'), 'utf8')).version;
+  const bundle = `/* NST Attendance — mobile bookmarklet, v${version}
  * https://github.com/yats0x7/nst-attendance
  *
  * Built from the extension's own source by scripts/build-mobile.mjs. Runs only
@@ -161,6 +167,15 @@ ${parts.join('\n')}
 })();
 `;
 
-mkdirSync(join(ROOT, 'docs'), { recursive: true });
-writeFileSync(join(ROOT, 'docs/nst-mobile.js'), bundle);
-console.log(`docs/nst-mobile.js  ${(bundle.length / 1024).toFixed(1)} KB  (v${version})`);
+  return { bundle, version };
+}
+
+export const BUNDLE_PATH = join(ROOT, 'docs/nst-mobile.js');
+
+// Only write when run as a script; importing it must stay side-effect free.
+if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
+  const { bundle, version } = buildBundle();
+  mkdirSync(join(ROOT, 'docs'), { recursive: true });
+  writeFileSync(BUNDLE_PATH, bundle);
+  console.log(`docs/nst-mobile.js  ${(bundle.length / 1024).toFixed(1)} KB  (v${version})`);
+}
